@@ -20,6 +20,8 @@ import static org.mybatis.generator.internal.util.messages.Messages.getString;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.mybatis.generator.api.CommentGenerator;
 import org.mybatis.generator.api.dom.java.CompilationUnit;
@@ -83,6 +85,30 @@ public class JavaMapperGenerator extends AbstractJavaClientGenerator {
         }
 
         if (stringHasValue(rootInterface)) {
+            // format generic type based on generated classes
+            String[] elements = Pattern.compile("%[pe]").split(rootInterface);
+            if (elements.length > 1) {
+                StringBuilder sb = new StringBuilder();
+                int index = 0;
+                for (String element : elements) {
+                    sb.append(element);
+                    index += element.length() + 2;
+                    if (index < rootInterface.length()) {
+                        switch (rootInterface.charAt(index - 1)) {
+                            case 'p': {
+                                sb.append(introspectedTable.getBaseRecordType());
+                                break;
+                            }
+                            case 'e': {
+                                sb.append(introspectedTable.getExampleType());
+                                break;
+                            }
+                        }
+                    }
+                }
+                rootInterface = sb.toString();
+            }
+
             FullyQualifiedJavaType fqjt = new FullyQualifiedJavaType(
                     rootInterface);
             interfaze.addSuperInterface(fqjt);
