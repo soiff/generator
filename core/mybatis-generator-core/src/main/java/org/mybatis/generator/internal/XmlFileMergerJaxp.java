@@ -90,7 +90,25 @@ public class XmlFileMergerJaxp {
                     existingFile.getName()), e);
         }
     }
-    
+
+    private static void mergeElements(Element to, Element from, boolean fromIfSame) {
+        final NamedNodeMap toAttributes = to.getAttributes();
+        final NamedNodeMap fromAttributes = from.getAttributes();
+        Node toNode,fromNode;
+        for (int i = 0; i < fromAttributes.getLength(); ++ i) {
+            fromNode = fromAttributes.item(i);
+            toNode = toAttributes.getNamedItem(fromNode.getNodeName());
+            if (null != toNode) {
+                if (fromIfSame)
+                    toNode.setNodeValue(fromNode.getNodeValue());
+            } else {
+                to.setAttribute(fromNode.getNodeName(), fromNode.getNodeValue());
+            }
+        }
+
+        //TODO: merge children
+    }
+
     public static String getMergedSource(InputSource newFile,
             InputSource existingFile, String existingFileName) throws IOException, SAXException,
             ParserConfigurationException, ShellException {
